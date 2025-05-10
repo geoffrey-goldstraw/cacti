@@ -860,11 +860,17 @@ function query_snmp_host($host_id, $snmp_query_id) {
 
 			/* fetch specified index at specified OID, measuring time */
 			$start = microtime(true);
-			$snmp_indexes = cacti_snmp_session_walk($session, $snmp_queries['oid_index']);
+			$temp_indexes = cacti_snmp_session_walk($session, $snmp_queries['oid_index']);
 			$end   = microtime(true);
 
-			query_debug_timer_offset('data_query', __esc('Tested Bulk Walk Size %d with a response of %2.4f.', $size, $end - $start));
+			if(cacti_sizeof($temp_indexes) == 0 ){
+					query_debug_timer_offset('data_query', __esc('Tested Bulk Walk Size %d with no response', $size));
+					break;
+			}
 
+			$snmp_indexes = $temp_indexes;
+			query_debug_timer_offset('data_query', __esc('Tested Bulk Walk Size %d with a response of %2.4f.', $size, $end - $start));
+			
 			$total = $end - $start;
 			if ($total > $low_total) {
 				break;
